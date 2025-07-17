@@ -1,12 +1,12 @@
 import sequelize from "./database.js";
 import CompanyModel from "../company/company.model.js";
 import UserModel from "../user/user.model.js";
-import BusinessPartnersModel from "../businessPartner/BusinessPartnerModel.js";
-import WarehouseModel from "../warehouse/WarehouseModel.js";
-import ProductModel from "../product/ProductModel.js";
-import OrderModel from "../order/OrderModel.js";
-import OrderItemModel from "../order/OrderItemModal.js";
-import InvoiceModel from "../Invoice/InvoiceModel.js";
+import BusinessPartnersModel from "../business-partner/business-partner.model.js";
+import WarehouseModel from "../warehouse/warehouse.model.js";
+import ProductModel from "../product/product.model.js";
+import OrderModel from "../order/order.model.js";
+import OrderItemModel from "../order-item/order-item.model.js";
+import InvoiceModel from "../Invoice/invoice.model.js";
 
 class DatabaseManager {
   private static instance: DatabaseManager;
