@@ -21,6 +21,21 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/business-partners/top-customer - Get customer with most orders
+router.get("/top-customer", async (_req: Request, res: Response) => {
+  try {
+    const topCustomer =
+      await businessPartnersService.getCustomerWithMostOrders();
+    res.status(200).json({
+      message: "Top customer retrieved successfully",
+      data: topCustomer,
+    });
+  } catch (error) {
+    console.error("Error fetching top customer:", error);
+    res.status(500).json({ message: "Error fetching top customer" });
+  }
+});
+
 // GET /api/business-partners/:id - Get business partner by ID
 router.get("/:id", async (req: Request, res: Response) => {
   try {
