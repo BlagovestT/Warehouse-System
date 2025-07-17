@@ -23,7 +23,7 @@ class ProductModel
   public type!: "solid" | "liquid";
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
   public modifiedBy!: string;
 
   public static initModel(sequelize: Sequelize): typeof ProductModel {
@@ -73,7 +73,6 @@ class ProductModel
         tableName: "product",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",

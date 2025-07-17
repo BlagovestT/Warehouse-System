@@ -26,7 +26,7 @@ class BusinessPartnersModel
   public type!: "customer" | "supplier";
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
   public modifiedBy!: string;
 
   public static initModel(sequelize: Sequelize): typeof BusinessPartnersModel {
@@ -79,7 +79,6 @@ class BusinessPartnersModel
         tableName: "business_partners",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",

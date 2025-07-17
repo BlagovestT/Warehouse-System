@@ -22,7 +22,7 @@ class UserModel
   public password!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
 
   public static initModel(sequelize: Sequelize): typeof UserModel {
     UserModel.init(
@@ -71,7 +71,6 @@ class UserModel
         tableName: "user",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",

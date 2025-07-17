@@ -30,7 +30,7 @@ export default {
       },
       modifiedBy: {
         type: Sequelize.UUID,
-        allowNull: false,
+        allowNull: true,
       },
     });
   },

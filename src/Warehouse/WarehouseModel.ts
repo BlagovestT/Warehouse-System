@@ -21,7 +21,7 @@ class WarehouseModel
   public name!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
   public modifiedBy!: string;
 
   public static initModel(sequelize: Sequelize): typeof WarehouseModel {
@@ -67,7 +67,6 @@ class WarehouseModel
         tableName: "warehouse",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",

@@ -25,7 +25,7 @@ class OrderModel
   public type!: "shipment" | "delivery";
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
   public modifiedBy!: string;
 
   public static initModel(sequelize: Sequelize): typeof OrderModel {
@@ -48,7 +48,7 @@ class OrderModel
         },
         businessPartnerId: {
           type: DataTypes.UUID,
-          allowNull: false,
+          allowNull: true,
           field: "businessPartnerId",
         },
         orderNumber: {
@@ -82,7 +82,6 @@ class OrderModel
         tableName: "order",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",

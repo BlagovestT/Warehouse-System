@@ -17,7 +17,7 @@ class CompanyModel
   public name!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
   public modifiedBy!: string;
 
   public static initModel(sequelize: Sequelize): typeof CompanyModel {
@@ -46,7 +46,7 @@ class CompanyModel
         },
         modifiedBy: {
           type: DataTypes.UUID,
-          allowNull: false,
+          allowNull: true,
         },
       },
       {
@@ -54,7 +54,6 @@ class CompanyModel
         tableName: "company",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",

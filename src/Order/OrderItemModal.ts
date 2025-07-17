@@ -21,7 +21,7 @@ class OrderItemModel
   public quantity!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-  public readonly deletedAt!: Date;
+  public readonly deletedAt?: Date;
   public modifiedBy!: string;
 
   public static initModel(sequelize: Sequelize): typeof OrderItemModel {
@@ -68,7 +68,6 @@ class OrderItemModel
         tableName: "order_item",
         timestamps: true,
         paranoid: true,
-        underscored: true,
         createdAt: "createdAt",
         updatedAt: "updatedAt",
         deletedAt: "deletedAt",
