@@ -1,52 +1,45 @@
-import OrderModel from "./order.model.js";
+import OrderModel, { OrderAttributes } from "./order.model.js";
+import { BaseService } from "../utils/base.service.js";
 
-class OrderService {
-  private orderModel: typeof OrderModel;
+type CreateOrderData = Pick<
+  OrderAttributes,
+  | "companyId"
+  | "warehouseId"
+  | "businessPartnerId"
+  | "orderNumber"
+  | "type"
+  | "modifiedBy"
+>;
+type UpdateOrderData = Pick<
+  OrderAttributes,
+  "warehouseId" | "businessPartnerId" | "orderNumber" | "type" | "modifiedBy"
+>;
 
+class OrderService extends BaseService<OrderModel> {
   constructor(orderModel: typeof OrderModel = OrderModel) {
-    this.orderModel = orderModel;
+    super(orderModel);
   }
 
-  // Get all orders
+  protected getEntityName(): string {
+    return "Order";
+  }
+
   async getAllOrders() {
-    const result = await this.orderModel.findAll();
-
-    if (!result) {
-      throw new Error("No orders found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get order by ID
   async getOrderById(id: string) {
-    const order = await this.orderModel.findByPk(id);
-
-    if (!order) {
-      throw new Error("Order not found");
-    }
-
-    return order;
+    return this.getById(id);
   }
 
-  // Create a new order
-  async createOrder(orderData: {
-    companyId: string;
-    warehouseId: string;
-    businessPartnerId: string;
-    orderNumber: string;
-    type: "shipment" | "delivery";
-    modifiedBy: string;
-  }) {
-    const {
-      companyId,
-      warehouseId,
-      businessPartnerId,
-      orderNumber,
-      type,
-      modifiedBy,
-    } = orderData;
+  async deleteOrder(id: string) {
+    return this.deleteById(id);
+  }
 
-    const existingOrder = await this.orderModel.findOne({
+  async createOrder(orderData: CreateOrderData) {
+    const { orderNumber } = orderData;
+
+    const existingOrder = await this.model.findOne({
       where: { orderNumber },
     });
 
@@ -54,56 +47,26 @@ class OrderService {
       throw new Error("Order already exists");
     }
 
-    return await this.orderModel.create({
-      companyId,
-      warehouseId,
-      businessPartnerId,
-      orderNumber,
-      type,
-      modifiedBy,
-    });
+    return await this.model.create(orderData);
   }
 
-  // Update order by ID
-  async updateOrder(
-    id: string,
-    updateData: {
-      warehouseId: string;
-      businessPartnerId: string;
-      orderNumber: string;
-      type: "shipment" | "delivery";
-      modifiedBy: string;
-    }
-  ) {
-    const { warehouseId, businessPartnerId, orderNumber, type, modifiedBy } =
-      updateData;
+  async updateOrder(id: string, updateData: UpdateOrderData) {
+    const { orderNumber } = updateData;
 
-    const order = await this.orderModel.findByPk(id);
+    const order = await this.getById(id);
 
-    if (!order) {
-      throw new Error("Order not found");
+    if (orderNumber !== order.orderNumber) {
+      const existingOrder = await this.model.findOne({
+        where: { orderNumber },
+      });
+
+      if (existingOrder) {
+        throw new Error("Order number already exists");
+      }
     }
 
-    await order.update({
-      warehouseId,
-      businessPartnerId,
-      orderNumber,
-      type,
-      modifiedBy,
-    });
+    await order.update(updateData);
     return order;
-  }
-
-  // Delete order by ID
-  async deleteOrder(id: string) {
-    const order = await this.orderModel.findByPk(id);
-
-    if (!order) {
-      throw new Error("Order not found");
-    }
-
-    await order.destroy();
-    return { message: "Order deleted successfully" };
   }
 }
 

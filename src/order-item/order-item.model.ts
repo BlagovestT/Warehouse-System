@@ -1,14 +1,14 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-interface OrderItemAttributes {
-  id: string;
+export interface OrderItemAttributes extends BaseAttributes {
   orderId: string;
   productId: string;
   quantity: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class OrderItemModel
@@ -27,11 +27,7 @@ class OrderItemModel
   public static initModel(sequelize: Sequelize): typeof OrderItemModel {
     OrderItemModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         orderId: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -46,31 +42,15 @@ class OrderItemModel
           type: DataTypes.INTEGER,
           allowNull: false,
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
         modifiedBy: {
           type: DataTypes.UUID,
-          allowNull: false,
+          allowNull: false, // Override base to make it required
         },
       },
       {
         sequelize,
         tableName: "order_item",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return OrderItemModel;

@@ -1,47 +1,45 @@
-import BusinessPartnersModel from "./business-partner.model.js";
+import BusinessPartnersModel, {
+  BusinessPartnersAttributes,
+} from "./business-partner.model.js";
+import { BaseService } from "../utils/base.service.js";
 import { QueryTypes } from "sequelize";
 
-class BusinessPartnersService {
-  private businessPartnersModel: typeof BusinessPartnersModel;
+type CreateBusinessPartnerData = Pick<
+  BusinessPartnersAttributes,
+  "companyId" | "name" | "email" | "type" | "modifiedBy"
+>;
+type UpdateBusinessPartnerData = Pick<
+  BusinessPartnersAttributes,
+  "name" | "email" | "type" | "modifiedBy"
+>;
 
+class BusinessPartnersService extends BaseService<BusinessPartnersModel> {
   constructor(
     businessPartnersModel: typeof BusinessPartnersModel = BusinessPartnersModel
   ) {
-    this.businessPartnersModel = businessPartnersModel;
+    super(businessPartnersModel);
   }
 
-  // Get all business partners
+  protected getEntityName(): string {
+    return "Business partner";
+  }
+
   async getAllBusinessPartners() {
-    const result = await this.businessPartnersModel.findAll();
-
-    if (!result) {
-      throw new Error("No business partners found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get business partner by ID
   async getBusinessPartnerById(id: string) {
-    const businessPartner = await this.businessPartnersModel.findByPk(id);
-
-    if (!businessPartner) {
-      throw new Error("Business partner not found");
-    }
-
-    return businessPartner;
+    return this.getById(id);
   }
 
-  // Create a new business partner
-  async createBusinessPartner(businessPartnerData: {
-    companyId: string;
-    name: string;
-    email: string;
-    type: "customer" | "supplier";
-    modifiedBy: string;
-  }) {
-    const { companyId, name, email, type, modifiedBy } = businessPartnerData;
+  async deleteBusinessPartner(id: string) {
+    return this.deleteById(id);
+  }
 
-    const existingBusinessPartner = await this.businessPartnersModel.findOne({
+  async createBusinessPartner(businessPartnerData: CreateBusinessPartnerData) {
+    const { email } = businessPartnerData;
+
+    const existingBusinessPartner = await this.model.findOne({
       where: { email },
     });
 
@@ -49,35 +47,19 @@ class BusinessPartnersService {
       throw new Error("Business partner already exists");
     }
 
-    return await this.businessPartnersModel.create({
-      companyId,
-      name,
-      email,
-      type,
-      modifiedBy,
-    });
+    return await this.model.create(businessPartnerData);
   }
 
-  // Update business partner by ID
   async updateBusinessPartner(
     id: string,
-    updateData: {
-      name: string;
-      email: string;
-      type: "customer" | "supplier";
-      modifiedBy: string;
-    }
+    updateData: UpdateBusinessPartnerData
   ) {
     const { name, email, type, modifiedBy } = updateData;
-    const businessPartner = await this.businessPartnersModel.findByPk(id);
 
-    if (!businessPartner) {
-      throw new Error("Business partner not found");
-    }
+    const businessPartner = await this.getById(id);
 
-    // Check if email is being changed and if it already exists
     if (email !== businessPartner.email) {
-      const existingBusinessPartner = await this.businessPartnersModel.findOne({
+      const existingBusinessPartner = await this.model.findOne({
         where: { email },
       });
 
@@ -90,20 +72,8 @@ class BusinessPartnersService {
     return businessPartner;
   }
 
-  // Delete business partner by ID
-  async deleteBusinessPartner(id: string) {
-    const businessPartner = await this.businessPartnersModel.findByPk(id);
-
-    if (!businessPartner) {
-      throw new Error("Business partner not found");
-    }
-
-    await businessPartner.destroy();
-    return { message: "Business partner deleted successfully" };
-  }
-  // Get customer with most orders
   async getCustomerWithMostOrders() {
-    const sequelize = this.businessPartnersModel.sequelize;
+    const sequelize = this.model.sequelize;
 
     if (!sequelize) {
       throw new Error("Database connection not available");

@@ -5,6 +5,7 @@ import helmet from "helmet";
 import DatabaseManager from "./config/database.manager.js";
 import routes from "./routes/routes.js";
 import bodyParser from "body-parser";
+import { ErrorHandlerMiddleware } from "./middleware/error-handler.middleware.js";
 
 dotenv.config();
 
@@ -20,6 +21,8 @@ app.use(bodyParser.json());
 
 // Route handling
 app.use("/api", routes);
+
+app.use(ErrorHandlerMiddleware);
 
 // Initialize database and start server
 const startServer = async (): Promise<void> => {

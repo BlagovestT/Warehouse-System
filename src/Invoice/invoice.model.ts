@@ -1,15 +1,15 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-export interface InvoiceAttributes {
-  id: string;
+export interface InvoiceAttributes extends BaseAttributes {
   companyId: string;
   orderId: string;
   invoiceNumber: string;
   date: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class InvoiceModel
@@ -29,11 +29,7 @@ class InvoiceModel
   public static initModel(sequelize: Sequelize): typeof InvoiceModel {
     InvoiceModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         companyId: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -53,18 +49,6 @@ class InvoiceModel
           type: DataTypes.DATEONLY,
           allowNull: false,
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
         modifiedBy: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -73,11 +57,7 @@ class InvoiceModel
       {
         sequelize,
         tableName: "invoice",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return InvoiceModel;

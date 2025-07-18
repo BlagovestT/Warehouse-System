@@ -1,38 +1,34 @@
-import CompanyModel from "./company.model.js";
+import CompanyModel, { CompanyAttributes } from "./company.model.js";
+import { BaseService } from "../utils/base.service.js";
 
-class CompanyService {
-  private companyModel: typeof CompanyModel;
+type CreateCompanyData = Pick<CompanyAttributes, "name" | "modifiedBy">;
+type UpdateCompanyData = Pick<CompanyAttributes, "name">;
 
+class CompanyService extends BaseService<CompanyModel> {
   constructor(companyModel: typeof CompanyModel = CompanyModel) {
-    this.companyModel = companyModel;
+    super(companyModel);
   }
 
-  // Get all companies
+  protected getEntityName(): string {
+    return "Company";
+  }
+
   async getAllCompanies() {
-    const result = await this.companyModel.findAll();
-
-    if (!result) {
-      throw new Error("No companies found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get company by ID
   async getCompanyById(id: string) {
-    const company = await this.companyModel.findByPk(id);
-
-    if (!company) {
-      throw new Error("Company not found");
-    }
-
-    return company;
+    return this.getById(id);
   }
 
-  // Create a new company
-  async createCompany(companyData: { name: string; modifiedBy: string }) {
+  async deleteCompany(id: string) {
+    return this.deleteById(id);
+  }
+
+  async createCompany(companyData: CreateCompanyData) {
     const { name, modifiedBy } = companyData;
 
-    const existingCompany = await this.companyModel.findOne({
+    const existingCompany = await this.model.findOne({
       where: { name },
     });
 
@@ -40,36 +36,19 @@ class CompanyService {
       throw new Error("Company already exists");
     }
 
-    return await this.companyModel.create({
+    return await this.model.create({
       name,
       modifiedBy,
     });
   }
 
-  // Update company by ID
-  async updateCompany(id: string, updateData: { name: string }) {
+  async updateCompany(id: string, updateData: UpdateCompanyData) {
     const { name } = updateData;
 
-    const company = await this.companyModel.findByPk(id);
-
-    if (!company) {
-      throw new Error("Company not found");
-    }
+    const company = await this.getById(id);
 
     await company.update({ name });
     return company;
-  }
-
-  // Delete company by ID
-  async deleteCompany(id: string) {
-    const company = await this.companyModel.findByPk(id);
-
-    if (!company) {
-      throw new Error("Company not found");
-    }
-
-    await company.destroy();
-    return { message: "Company deleted successfully" };
   }
 }
 

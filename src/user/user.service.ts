@@ -1,81 +1,64 @@
-import UserModel from "./user.model.js";
+import UserModel, { UserAttributes } from "./user.model.js";
+import { BaseService } from "../utils/base.service.js";
 
-class UserService {
-  private userModel: typeof UserModel;
+type CreateUserData = Pick<
+  UserAttributes,
+  "companyId" | "username" | "email" | "password"
+>;
+type UpdateUserData = Pick<UserAttributes, "username" | "email" | "password">;
 
+class UserService extends BaseService<UserModel> {
   constructor(userModel: typeof UserModel = UserModel) {
-    this.userModel = userModel;
+    super(userModel);
   }
 
-  // Get all users
+  protected getEntityName(): string {
+    return "User";
+  }
+
   async getAllUsers() {
-    const result = await this.userModel.findAll();
-    if (!result) {
-      throw new Error("No users found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get user by ID
   async getUserById(id: string) {
-    const user = await this.userModel.findByPk(id);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    return user;
+    return this.getById(id);
   }
 
-  // Create a new user
-  async createUser(userData: {
-    companyId: string;
-    username: string;
-    email: string;
-    password: string;
-  }) {
-    const { companyId, username, email, password } = userData;
+  async createUser(userData: CreateUserData) {
+    const { email } = userData;
 
-    const existingUser = await this.userModel.findOne({
+    const existingUser = await this.model.findOne({
       where: { email },
     });
+
     if (existingUser) {
       throw new Error("User already exists");
     }
-    return await this.userModel.create({
-      companyId,
-      username,
-      email,
-      password,
-    });
+
+    return await this.model.create(userData);
   }
 
-  // Update user by ID
-  async updateUser(
-    id: string,
-    updateData: {
-      username: string;
-      email: string;
-      password: string;
-    }
-  ) {
-    const { username, email, password } = updateData;
-    const user = await this.userModel.findByPk(id);
+  async updateUser(id: string, updateData: UpdateUserData) {
+    const { email } = updateData;
 
-    if (!user) {
-      throw new Error("User not found");
+    const user = await this.getById(id); // Reuse base method
+
+    if (email !== user.email) {
+      const existingUser = await this.model.findOne({
+        where: { email },
+      });
+
+      if (existingUser) {
+        throw new Error("Email already exists");
+      }
     }
-    await user.update({ username, email, password });
+
+    await user.update(updateData);
     return user;
   }
 
-  // Delete user by ID
   async deleteUser(id: string) {
-    const user = await this.userModel.findByPk(id);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
+    const user = await this.getById(id);
 
     if (user.deletedAt) {
       throw new Error("User already deleted");

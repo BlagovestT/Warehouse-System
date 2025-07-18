@@ -5,6 +5,7 @@ import {
   updateBusinessPartnerSchema,
 } from "./business-partner.schema.js";
 import BusinessPartnersService from "./business-partner.service.js";
+import { handleServiceError } from "../middleware/error-handler.middleware.js";
 
 const router = Router();
 const businessPartnersService = new BusinessPartnersService();
@@ -16,8 +17,7 @@ router.get("/", async (_req: Request, res: Response) => {
       await businessPartnersService.getAllBusinessPartners();
     res.status(200).json(businessPartners);
   } catch (error) {
-    console.error("Error fetching business partners:", error);
-    res.status(500).json({ message: "Error fetching business partners" });
+    handleServiceError(error, res, "fetching business partners");
   }
 });
 
@@ -31,8 +31,7 @@ router.get("/top-customer", async (_req: Request, res: Response) => {
       data: topCustomer,
     });
   } catch (error) {
-    console.error("Error fetching top customer:", error);
-    res.status(500).json({ message: "Error fetching top customer" });
+    handleServiceError(error, res, "fetching top customer");
   }
 });
 
@@ -43,16 +42,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       await businessPartnersService.getBusinessPartnerById(req.params.id);
     res.status(200).json(businessPartner);
   } catch (error) {
-    console.error("Error fetching business partner:", error);
-
-    if (
-      error instanceof Error &&
-      error.message === "Business partner not found"
-    ) {
-      return res.status(404).json({ message: "Business partner not found" });
-    }
-
-    res.status(500).json({ message: "Error fetching business partner" });
+    handleServiceError(error, res, "fetching business partner");
   }
 });
 
@@ -62,33 +52,14 @@ router.post(
   validateData(createBusinessPartnerSchema),
   async (req: Request, res: Response) => {
     try {
-      const { companyId, name, email, type, modifiedBy } = req.body;
-
       const newBusinessPartner =
-        await businessPartnersService.createBusinessPartner({
-          companyId,
-          name,
-          email,
-          type,
-          modifiedBy,
-        });
+        await businessPartnersService.createBusinessPartner(req.body);
       res.status(201).json({
         message: "Business partner created successfully",
         businessPartner: newBusinessPartner,
       });
     } catch (error) {
-      console.error("Error creating business partner:", error);
-
-      if (
-        error instanceof Error &&
-        error.message === "Business partner already exists"
-      ) {
-        return res
-          .status(400)
-          .json({ message: "Business partner already exists" });
-      }
-
-      res.status(500).json({ message: "Error creating business partner" });
+      handleServiceError(error, res, "creating business partner");
     }
   }
 );
@@ -99,34 +70,17 @@ router.put(
   validateData(updateBusinessPartnerSchema),
   async (req: Request, res: Response) => {
     try {
-      const { name, email, type, modifiedBy } = req.body;
-
       const updatedBusinessPartner =
-        await businessPartnersService.updateBusinessPartner(req.params.id, {
-          name,
-          email,
-          type,
-          modifiedBy,
-        });
+        await businessPartnersService.updateBusinessPartner(
+          req.params.id,
+          req.body
+        );
       res.status(200).json({
         message: "Business partner updated successfully",
         businessPartner: updatedBusinessPartner,
       });
     } catch (error) {
-      console.error("Error updating business partner:", error);
-
-      if (
-        error instanceof Error &&
-        error.message === "Business partner not found"
-      ) {
-        return res.status(404).json({ message: "Business partner not found" });
-      }
-
-      if (error instanceof Error && error.message === "Email already exists") {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-
-      res.status(500).json({ message: "Error updating business partner" });
+      handleServiceError(error, res, "updating business partner");
     }
   }
 );
@@ -139,16 +93,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     );
     res.status(200).json(result);
   } catch (error) {
-    console.error("Error deleting business partner:", error);
-
-    if (
-      error instanceof Error &&
-      error.message === "Business partner not found"
-    ) {
-      return res.status(404).json({ message: "Business partner not found" });
-    }
-
-    res.status(500).json({ message: "Error deleting business partner" });
+    handleServiceError(error, res, "deleting business partner");
   }
 });
 

@@ -1,6 +1,7 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import { commonModelOptions } from "../utils/base.types.js";
 
-interface UserAttributes {
+export interface UserAttributes {
   id: string;
   companyId: string;
   username: string;
@@ -69,11 +70,7 @@ class UserModel
       {
         sequelize,
         tableName: "user",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return UserModel;

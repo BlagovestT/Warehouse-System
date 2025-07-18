@@ -1,15 +1,15 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-interface ProductAttributes {
-  id: string;
+export interface ProductAttributes extends BaseAttributes {
   companyId: string;
   name: string;
   price: number;
   type: "solid" | "liquid";
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class ProductModel
@@ -29,11 +29,7 @@ class ProductModel
   public static initModel(sequelize: Sequelize): typeof ProductModel {
     ProductModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         companyId: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -51,31 +47,15 @@ class ProductModel
           type: DataTypes.ENUM("solid", "liquid"),
           allowNull: false,
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
         modifiedBy: {
           type: DataTypes.UUID,
-          allowNull: false,
+          allowNull: false, // Override base to make it required
         },
       },
       {
         sequelize,
         tableName: "product",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return ProductModel;

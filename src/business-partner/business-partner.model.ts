@@ -1,15 +1,15 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-interface BusinessPartnersAttributes {
-  id: string;
+export interface BusinessPartnersAttributes extends BaseAttributes {
   companyId: string;
   name: string;
   email: string;
   type: "customer" | "supplier";
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class BusinessPartnersModel
@@ -32,11 +32,7 @@ class BusinessPartnersModel
   public static initModel(sequelize: Sequelize): typeof BusinessPartnersModel {
     BusinessPartnersModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         companyId: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -57,31 +53,15 @@ class BusinessPartnersModel
           type: DataTypes.ENUM("customer", "supplier"),
           allowNull: false,
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
         modifiedBy: {
           type: DataTypes.UUID,
-          allowNull: false,
+          allowNull: false, // Override base to make it required
         },
       },
       {
         sequelize,
         tableName: "business_partners",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return BusinessPartnersModel;

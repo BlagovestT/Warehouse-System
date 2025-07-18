@@ -1,12 +1,12 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-interface CompanyAttributes {
-  id: string;
+export interface CompanyAttributes extends BaseAttributes {
   name: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class CompanyModel
@@ -23,40 +23,16 @@ class CompanyModel
   public static initModel(sequelize: Sequelize): typeof CompanyModel {
     CompanyModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         name: {
           type: DataTypes.STRING,
           allowNull: false,
-        },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
-        modifiedBy: {
-          type: DataTypes.UUID,
-          allowNull: true,
         },
       },
       {
         sequelize,
         tableName: "company",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return CompanyModel;

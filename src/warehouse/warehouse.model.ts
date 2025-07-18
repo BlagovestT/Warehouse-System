@@ -1,14 +1,14 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-interface WarehouseAttributes {
-  id: string;
+export interface WarehouseAttributes extends BaseAttributes {
   companyId: string;
   supportType: "solid" | "liquid" | "mixed";
   name: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class WarehouseModel
@@ -27,11 +27,7 @@ class WarehouseModel
   public static initModel(sequelize: Sequelize): typeof WarehouseModel {
     WarehouseModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         companyId: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -45,18 +41,6 @@ class WarehouseModel
           type: DataTypes.STRING,
           allowNull: false,
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
         modifiedBy: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -65,11 +49,7 @@ class WarehouseModel
       {
         sequelize,
         tableName: "warehouse",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return WarehouseModel;

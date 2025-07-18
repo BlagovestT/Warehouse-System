@@ -1,16 +1,16 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
+import {
+  BaseAttributes,
+  commonFields,
+  commonModelOptions,
+} from "../utils/base.types.js";
 
-interface OrderAttributes {
-  id: string;
+export interface OrderAttributes extends BaseAttributes {
   companyId: string;
   warehouseId: string;
   businessPartnerId: string;
   orderNumber: string;
   type: "shipment" | "delivery";
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date;
-  modifiedBy: string;
 }
 
 class OrderModel
@@ -31,11 +31,7 @@ class OrderModel
   public static initModel(sequelize: Sequelize): typeof OrderModel {
     OrderModel.init(
       {
-        id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
-          primaryKey: true,
-        },
+        ...commonFields,
         companyId: {
           type: DataTypes.UUID,
           allowNull: false,
@@ -60,31 +56,15 @@ class OrderModel
           type: DataTypes.ENUM("shipment", "delivery"),
           allowNull: false,
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-        deletedAt: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
         modifiedBy: {
           type: DataTypes.UUID,
-          allowNull: false,
+          allowNull: false, // Override base to make it required
         },
       },
       {
         sequelize,
         tableName: "order",
-        timestamps: true,
-        paranoid: true,
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-        deletedAt: "deletedAt",
+        ...commonModelOptions,
       }
     );
     return OrderModel;

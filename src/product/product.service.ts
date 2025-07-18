@@ -1,45 +1,41 @@
-import ProductModel from "./product.model.js";
+import ProductModel, { ProductAttributes } from "./product.model.js";
+import { BaseService } from "../utils/base.service.js";
 import { QueryTypes } from "sequelize";
 
-class ProductService {
-  private productModel: typeof ProductModel;
+type CreateProductData = Pick<
+  ProductAttributes,
+  "companyId" | "name" | "price" | "type" | "modifiedBy"
+>;
+type UpdateProductData = Pick<
+  ProductAttributes,
+  "name" | "price" | "type" | "modifiedBy"
+>;
 
+class ProductService extends BaseService<ProductModel> {
   constructor(productModel: typeof ProductModel = ProductModel) {
-    this.productModel = productModel;
+    super(productModel);
   }
 
-  // Get all products
+  protected getEntityName(): string {
+    return "Product";
+  }
+
   async getAllProducts() {
-    const result = await this.productModel.findAll();
-
-    if (!result) {
-      throw new Error("No products found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get product by ID
   async getProductById(id: string) {
-    const product = await this.productModel.findByPk(id);
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    return product;
+    return this.getById(id);
   }
 
-  // Create a new product
-  async createProduct(productData: {
-    companyId: string;
-    name: string;
-    price: number;
-    type: "solid" | "liquid";
-    modifiedBy: string;
-  }) {
-    const { companyId, name, price, type, modifiedBy } = productData;
+  async deleteProduct(id: string) {
+    return this.deleteById(id);
+  }
 
-    const existingProduct = await this.productModel.findOne({
+  async createProduct(productData: CreateProductData) {
+    const { name, companyId } = productData;
+
+    const existingProduct = await this.model.findOne({
       where: { name, companyId },
     });
 
@@ -47,51 +43,30 @@ class ProductService {
       throw new Error("Product already exists");
     }
 
-    return await this.productModel.create({
-      companyId,
-      name,
-      price,
-      type,
-      modifiedBy,
-    });
+    return await this.model.create(productData);
   }
 
-  // Update product by ID
-  async updateProduct(
-    id: string,
-    updateData: {
-      name: string;
-      price: number;
-      type: "solid" | "liquid";
-      modifiedBy: string;
-    }
-  ) {
-    const { name, price, type, modifiedBy } = updateData;
-    const product = await this.productModel.findByPk(id);
+  async updateProduct(id: string, updateData: UpdateProductData) {
+    const { name } = updateData;
 
-    if (!product) {
-      throw new Error("Product not found");
+    const product = await this.getById(id);
+
+    if (name !== product.name) {
+      const existingProduct = await this.model.findOne({
+        where: { name, companyId: product.companyId },
+      });
+
+      if (existingProduct) {
+        throw new Error("Product name already exists");
+      }
     }
 
-    await product.update({ name, price, type, modifiedBy });
+    await product.update(updateData);
     return product;
   }
 
-  // Delete product by ID
-  async deleteProduct(id: string) {
-    const product = await this.productModel.findByPk(id);
-
-    if (!product) {
-      throw new Error("Product not found");
-    }
-
-    await product.destroy();
-    return { message: "Product deleted successfully" };
-  }
-
-  // Best-selling product
   async getBestSellingProducts() {
-    const sequelize = this.productModel.sequelize;
+    const sequelize = this.model.sequelize;
 
     if (!sequelize) {
       throw new Error("Database connection not available");

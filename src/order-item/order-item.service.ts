@@ -1,44 +1,40 @@
-import OrderItemModel from "./order-item.model.js";
+import OrderItemModel, { OrderItemAttributes } from "./order-item.model.js";
+import { BaseService } from "../utils/base.service.js";
 
-class OrderItemService {
-  private orderItemModel: typeof OrderItemModel;
+type CreateOrderItemData = Pick<
+  OrderItemAttributes,
+  "orderId" | "productId" | "quantity" | "modifiedBy"
+>;
+type UpdateOrderItemData = Pick<
+  OrderItemAttributes,
+  "productId" | "quantity" | "modifiedBy"
+>;
 
+class OrderItemService extends BaseService<OrderItemModel> {
   constructor(orderItemModel: typeof OrderItemModel = OrderItemModel) {
-    this.orderItemModel = orderItemModel;
+    super(orderItemModel);
   }
 
-  // Get all order items
+  protected getEntityName(): string {
+    return "Order item";
+  }
+
   async getAllOrderItems() {
-    const result = await this.orderItemModel.findAll();
-
-    if (!result) {
-      throw new Error("No order items found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get order item by ID
   async getOrderItemById(id: string) {
-    const orderItem = await this.orderItemModel.findByPk(id);
-
-    if (!orderItem) {
-      throw new Error("Order item not found");
-    }
-
-    return orderItem;
+    return this.getById(id);
   }
 
-  // Create a new order item
-  async createOrderItem(orderItemData: {
-    orderId: string;
-    productId: string;
-    quantity: number;
-    modifiedBy: string;
-  }) {
-    const { orderId, productId, quantity, modifiedBy } = orderItemData;
+  async deleteOrderItem(id: string) {
+    return this.deleteById(id);
+  }
 
-    // Check if this product already exists in the order
-    const existingOrderItem = await this.orderItemModel.findOne({
+  async createOrderItem(orderItemData: CreateOrderItemData) {
+    const { orderId, productId } = orderItemData;
+
+    const existingOrderItem = await this.model.findOne({
       where: { orderId, productId },
     });
 
@@ -46,44 +42,26 @@ class OrderItemService {
       throw new Error("Product already exists in this order");
     }
 
-    return await this.orderItemModel.create({
-      orderId,
-      productId,
-      quantity,
-      modifiedBy,
-    });
+    return await this.model.create(orderItemData);
   }
 
-  // Update order item by ID
-  async updateOrderItem(
-    id: string,
-    updateData: {
-      productId: string;
-      quantity: number;
-      modifiedBy: string;
-    }
-  ) {
-    const { productId, quantity, modifiedBy } = updateData;
-    const orderItem = await this.orderItemModel.findByPk(id);
+  async updateOrderItem(id: string, updateData: UpdateOrderItemData) {
+    const { productId } = updateData;
 
-    if (!orderItem) {
-      throw new Error("Order item not found");
+    const orderItem = await this.getById(id);
+
+    if (productId !== orderItem.productId) {
+      const existingOrderItem = await this.model.findOne({
+        where: { orderId: orderItem.orderId, productId },
+      });
+
+      if (existingOrderItem) {
+        throw new Error("Product already exists in this order");
+      }
     }
 
-    await orderItem.update({ productId, quantity, modifiedBy });
+    await orderItem.update(updateData);
     return orderItem;
-  }
-
-  // Delete order item by ID
-  async deleteOrderItem(id: string) {
-    const orderItem = await this.orderItemModel.findByPk(id);
-
-    if (!orderItem) {
-      throw new Error("Order item not found");
-    }
-
-    await orderItem.destroy();
-    return { message: "Order item deleted successfully" };
   }
 }
 

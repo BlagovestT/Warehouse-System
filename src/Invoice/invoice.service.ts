@@ -1,39 +1,40 @@
-import InvoiceModel from "./invoice.model.js";
-import InvoiceAttributes from "./invoice.model.js";
+import InvoiceModel, { InvoiceAttributes } from "./invoice.model.js";
+import { BaseService } from "../utils/base.service.js";
 
-class InvoiceService {
-  private invoiceModel: typeof InvoiceModel;
+type CreateInvoiceData = Pick<
+  InvoiceAttributes,
+  "companyId" | "orderId" | "invoiceNumber" | "date" | "modifiedBy"
+>;
+type UpdateInvoiceData = Pick<
+  InvoiceAttributes,
+  "orderId" | "invoiceNumber" | "date" | "modifiedBy"
+>;
 
+class InvoiceService extends BaseService<InvoiceModel> {
   constructor(invoiceModel: typeof InvoiceModel = InvoiceModel) {
-    this.invoiceModel = invoiceModel;
+    super(invoiceModel);
   }
 
-  // Get all invoices
+  protected getEntityName(): string {
+    return "Invoice";
+  }
+
   async getAllInvoices() {
-    const result = await this.invoiceModel.findAll();
-
-    if (!result) {
-      throw new Error("No invoices found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get invoice by ID
   async getInvoiceById(id: string) {
-    const invoice = await this.invoiceModel.findByPk(id);
-
-    if (!invoice) {
-      throw new Error("Invoice not found");
-    }
-
-    return invoice;
+    return this.getById(id);
   }
 
-  // Create a new invoice
-  async createInvoice(invoiceData: InvoiceAttributes) {
-    const { companyId, orderId, invoiceNumber, date, modifiedBy } = invoiceData;
+  async deleteInvoice(id: string) {
+    return this.deleteById(id);
+  }
 
-    const existingInvoice = await this.invoiceModel.findOne({
+  async createInvoice(invoiceData: CreateInvoiceData) {
+    const { orderId, invoiceNumber } = invoiceData;
+
+    const existingInvoice = await this.model.findOne({
       where: { invoiceNumber },
     });
 
@@ -41,8 +42,7 @@ class InvoiceService {
       throw new Error("Invoice already exists");
     }
 
-    // Check if order already has an invoice (one-to-one relationship)
-    const existingOrderInvoice = await this.invoiceModel.findOne({
+    const existingOrderInvoice = await this.model.findOne({
       where: { orderId },
     });
 
@@ -50,35 +50,16 @@ class InvoiceService {
       throw new Error("Order already has an invoice");
     }
 
-    return await this.invoiceModel.create({
-      companyId,
-      orderId,
-      invoiceNumber,
-      date,
-      modifiedBy,
-    });
+    return await this.model.create(invoiceData);
   }
 
-  // Update invoice by ID
-  async updateInvoice(
-    id: string,
-    updateData: {
-      orderId: string;
-      invoiceNumber: string;
-      date: Date;
-      modifiedBy: string;
-    }
-  ) {
+  async updateInvoice(id: string, updateData: UpdateInvoiceData) {
     const { orderId, invoiceNumber, date, modifiedBy } = updateData;
-    const invoice = await this.invoiceModel.findByPk(id);
 
-    if (!invoice) {
-      throw new Error("Invoice not found");
-    }
+    const invoice = await this.getById(id);
 
-    // Check if invoiceNumber is being changed and if it already exists
     if (invoiceNumber !== invoice.invoiceNumber) {
-      const existingInvoice = await this.invoiceModel.findOne({
+      const existingInvoice = await this.model.findOne({
         where: { invoiceNumber },
       });
 
@@ -87,9 +68,8 @@ class InvoiceService {
       }
     }
 
-    // Check if orderId is being changed and if the new order already has an invoice
     if (orderId !== invoice.orderId) {
-      const existingOrderInvoice = await this.invoiceModel.findOne({
+      const existingOrderInvoice = await this.model.findOne({
         where: { orderId },
       });
 
@@ -100,18 +80,6 @@ class InvoiceService {
 
     await invoice.update({ orderId, invoiceNumber, date, modifiedBy });
     return invoice;
-  }
-
-  // Delete invoice by ID
-  async deleteInvoice(id: string) {
-    const invoice = await this.invoiceModel.findByPk(id);
-
-    if (!invoice) {
-      throw new Error("Invoice not found");
-    }
-
-    await invoice.destroy();
-    return { message: "Invoice deleted successfully" };
   }
 }
 

@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { validateData } from "../middleware/validation.middleware.js";
 import { createUserSchema, updateUserSchema } from "./user.schema.js";
 import UserService from "./user.service.js";
+import { handleServiceError } from "../middleware/error-handler.middleware.js";
 
 const router = Router();
 const userService = new UserService();
@@ -12,8 +13,7 @@ router.get("/", async (_req: Request, res: Response) => {
     const users = await userService.getAllUsers();
     res.status(200).json(users);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Error fetching users" });
+    handleServiceError(error, res, "fetching users");
   }
 });
 
@@ -23,13 +23,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     const user = await userService.getUserById(req.params.id);
     res.status(200).json(user);
   } catch (error) {
-    console.error("Error fetching user:", error);
-
-    if (error instanceof Error && error.message === "User not found") {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(500).json({ message: "Error fetching user" });
+    handleServiceError(error, res, "fetching user");
   }
 });
 
@@ -39,25 +33,12 @@ router.post(
   validateData(createUserSchema),
   async (req: Request, res: Response) => {
     try {
-      const { companyId, username, email, password } = req.body;
-
-      const newUser = await userService.createUser({
-        companyId,
-        username,
-        email,
-        password,
-      });
+      const newUser = await userService.createUser(req.body);
       res
         .status(201)
         .json({ message: "User created successfully", user: newUser });
     } catch (error) {
-      console.error("Error creating user:", error);
-
-      if (error instanceof Error && error.message === "User already exists") {
-        return res.status(400).json({ message: "User already exists" });
-      }
-
-      res.status(500).json({ message: "Error creating user" });
+      handleServiceError(error, res, "creating user");
     }
   }
 );
@@ -68,24 +49,12 @@ router.put(
   validateData(updateUserSchema),
   async (req: Request, res: Response) => {
     try {
-      const { username, email, password } = req.body;
-
-      const updatedUser = await userService.updateUser(req.params.id, {
-        username,
-        email,
-        password,
-      });
+      const updatedUser = await userService.updateUser(req.params.id, req.body);
       res
         .status(200)
         .json({ message: "User updated successfully", user: updatedUser });
     } catch (error) {
-      console.error("Error updating user:", error);
-
-      if (error instanceof Error && error.message === "User not found") {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.status(500).json({ message: "Error updating user" });
+      handleServiceError(error, res, "updating user");
     }
   }
 );
@@ -94,16 +63,9 @@ router.put(
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const result = await userService.deleteUser(req.params.id);
-
     res.status(200).json(result);
   } catch (error) {
-    console.error("Error deleting user:", error);
-
-    if (error instanceof Error && error.message === "User not found") {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(500).json({ message: "Error deleting user" });
+    handleServiceError(error, res, "deleting user");
   }
 });
 

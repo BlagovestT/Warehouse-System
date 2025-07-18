@@ -1,44 +1,42 @@
-import WarehouseModel from "./warehouse.model.js";
+import WarehouseModel, { WarehouseAttributes } from "./warehouse.model.js";
+import { BaseService } from "../utils/base.service.js";
 import { QueryTypes } from "sequelize";
 
-class WarehouseService {
-  private warehouseModel: typeof WarehouseModel;
+type CreateWarehouseData = Pick<
+  WarehouseAttributes,
+  "companyId" | "supportType" | "name" | "modifiedBy"
+>;
+type UpdateWarehouseData = Pick<
+  WarehouseAttributes,
+  "supportType" | "name" | "modifiedBy"
+>;
 
+class WarehouseService extends BaseService<WarehouseModel> {
   constructor(warehouseModel: typeof WarehouseModel = WarehouseModel) {
-    this.warehouseModel = warehouseModel;
+    super(warehouseModel);
   }
 
-  // Get all warehouses
+  protected getEntityName(): string {
+    return "Warehouse";
+  }
+
+  // Alias methods to maintain existing API
   async getAllWarehouses() {
-    const result = await this.warehouseModel.findAll();
-
-    if (!result) {
-      throw new Error("No warehouses found");
-    }
-    return result;
+    return this.getAll();
   }
 
-  // Get warehouse by ID
   async getWarehouseById(id: string) {
-    const warehouse = await this.warehouseModel.findByPk(id);
-
-    if (!warehouse) {
-      throw new Error("Warehouse not found");
-    }
-
-    return warehouse;
+    return this.getById(id);
   }
 
-  // Create a new warehouse
-  async createWarehouse(warehouseData: {
-    companyId: string;
-    supportType: "solid" | "liquid" | "mixed";
-    name: string;
-    modifiedBy: string;
-  }) {
-    const { companyId, supportType, name, modifiedBy } = warehouseData;
+  async deleteWarehouse(id: string) {
+    return this.deleteById(id);
+  }
 
-    const existingWarehouse = await this.warehouseModel.findOne({
+  async createWarehouse(warehouseData: CreateWarehouseData) {
+    const { name, companyId } = warehouseData;
+
+    const existingWarehouse = await this.model.findOne({
       where: { name, companyId },
     });
 
@@ -46,49 +44,18 @@ class WarehouseService {
       throw new Error("Warehouse already exists");
     }
 
-    return await this.warehouseModel.create({
-      companyId,
-      supportType,
-      name,
-      modifiedBy,
-    });
+    return await this.model.create(warehouseData);
   }
 
-  // Update warehouse by ID
-  async updateWarehouse(
-    id: string,
-    updateData: {
-      supportType: "solid" | "liquid" | "mixed";
-      name: string;
-      modifiedBy: string;
-    }
-  ) {
-    const { supportType, name, modifiedBy } = updateData;
-    const warehouse = await this.warehouseModel.findByPk(id);
+  async updateWarehouse(id: string, updateData: UpdateWarehouseData) {
+    const warehouse = await this.getById(id); // Reuse base method
 
-    if (!warehouse) {
-      throw new Error("Warehouse not found");
-    }
-
-    await warehouse.update({ supportType, name, modifiedBy });
+    await warehouse.update(updateData);
     return warehouse;
   }
 
-  // Delete warehouse by ID
-  async deleteWarehouse(id: string) {
-    const warehouse = await this.warehouseModel.findByPk(id);
-
-    if (!warehouse) {
-      throw new Error("Warehouse not found");
-    }
-
-    await warehouse.destroy();
-    return { message: "Warehouse deleted successfully" };
-  }
-
-  // Get product with highest stock
   async getProductWithHighestStock() {
-    const sequelize = this.warehouseModel.sequelize;
+    const sequelize = this.model.sequelize;
 
     if (!sequelize) {
       throw new Error("Database connection not available");
