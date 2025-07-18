@@ -1,6 +1,6 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
 
-interface InvoiceAttributes {
+export interface InvoiceAttributes {
   id: string;
   companyId: string;
   orderId: string;

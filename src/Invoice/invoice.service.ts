@@ -1,4 +1,5 @@
 import InvoiceModel from "./invoice.model.js";
+import InvoiceAttributes from "./invoice.model.js";
 
 class InvoiceService {
   private invoiceModel: typeof InvoiceModel;
@@ -29,13 +30,7 @@ class InvoiceService {
   }
 
   // Create a new invoice
-  async createInvoice(invoiceData: {
-    companyId: string;
-    orderId: string;
-    invoiceNumber: string;
-    date: Date;
-    modifiedBy: string;
-  }) {
+  async createInvoice(invoiceData: InvoiceAttributes) {
     const { companyId, orderId, invoiceNumber, date, modifiedBy } = invoiceData;
 
     const existingInvoice = await this.invoiceModel.findOne({

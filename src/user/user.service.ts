@@ -68,7 +68,7 @@ class UserService {
     await user.update({ username, email, password });
     return user;
   }
-  //Todo: add check for existing delatedAt
+
   // Delete user by ID
   async deleteUser(id: string) {
     const user = await this.userModel.findByPk(id);

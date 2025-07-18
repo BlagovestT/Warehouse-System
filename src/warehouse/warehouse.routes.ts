@@ -20,6 +20,20 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/warehouse/highest-stock - Get product with highest stock
+router.get("/highest-stock", async (_req: Request, res: Response) => {
+  try {
+    const highestStock = await warehouseService.getProductWithHighestStock();
+    res.status(200).json({
+      message: "Product with highest stock retrieved successfully",
+      data: highestStock,
+    });
+  } catch (error) {
+    console.error("Error fetching highest stock product:", error);
+    res.status(500).json({ message: "Error fetching highest stock product" });
+  }
+});
+
 // GET /api/warehouse/:id - Get warehouse by ID
 router.get("/:id", async (req: Request, res: Response) => {
   try {

@@ -255,12 +255,12 @@ class DatabaseManager {
     try {
       console.log("Initializing database");
 
+      await sequelize.authenticate();
+      console.log("Database connection established");
+
       this.initializeModels();
 
       this.defineAssociations();
-
-      await sequelize.authenticate();
-      console.log("Database connection established");
 
       this.isInitialized = true;
       console.log("Database initialization complete");
@@ -268,27 +268,6 @@ class DatabaseManager {
       console.error("Database initialization failed:", error);
       throw error;
     }
-  }
-
-  //Get models for use in controllers
-
-  public getModels() {
-    return {
-      CompanyModel,
-      UserModel,
-      BusinessPartnersModel,
-      WarehouseModel,
-      ProductModel,
-      OrderModel,
-      OrderItemModel,
-      InvoiceModel,
-    };
-  }
-
-  //Get Sequelize instance
-
-  public getSequelize() {
-    return sequelize;
   }
 }
 
