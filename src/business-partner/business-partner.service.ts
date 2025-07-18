@@ -112,7 +112,7 @@ class BusinessPartnersService extends BaseService<BusinessPartnersModel> {
       }
     );
 
-    return result;
+    return result[0];
   }
 }
 

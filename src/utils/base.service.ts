@@ -13,6 +13,7 @@ export abstract class BaseService<T extends Model> {
     if (!result) {
       throw new Error(`No ${this.getEntityName()} found`);
     }
+    console.log(result.map((item) => item.toJSON()));
     return result;
   }
 

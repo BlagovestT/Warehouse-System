@@ -98,7 +98,7 @@ class ProductService extends BaseService<ProductModel> {
       }
     );
 
-    return result;
+    return result[0];
   }
 }
 

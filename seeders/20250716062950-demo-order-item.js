@@ -2,8 +2,17 @@
 
 /** @type {import('sequelize-cli').Migration} */
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  up: async (queryInterface, Sequelize) => {
+  up: async (queryInterface, _Sequelize) => {
+    const existingRecords = await queryInterface.sequelize.query(
+      "SELECT COUNT(*) as count FROM order_item",
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+
+    if (existingRecords[0].count > 0) {
+      console.log("Business partners data already exists, skipping seed...");
+      return;
+    }
+
     await queryInterface.bulkInsert("order_item", [
       {
         id: "f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4c",
